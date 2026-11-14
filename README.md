@@ -4,6 +4,8 @@ A simple personal budget tracker built with [Next.js](https://nextjs.org) (App R
 
 ## Features
 
+- Collapsible sidebar navigation (Transactions, Categories) with a theme toggle
+- Categories page with per-category counts, income, expenses, net and share of spending
 - Add income and expense transactions with category, description and date
 - Summary cards for balance, total income and total expenses
 - Filterable transactions table (all / income / expenses) with delete
@@ -17,7 +19,7 @@ A simple personal budget tracker built with [Next.js](https://nextjs.org) (App R
 
 - Next.js 16, React 19, TypeScript
 - Tailwind CSS v4
-- shadcn/ui (Base UI primitives) with `lucide-react` icons
+- shadcn/ui (Base UI primitives) with `lucide-react` icons, including the sidebar block
 - `next-themes` for theming, `sonner` for toasts
 - SQLite via `better-sqlite3`, accessed through Next.js Server Actions
 
@@ -53,7 +55,7 @@ Set `DATABASE_PATH` to store the database somewhere else.
 
 ```
 src/
-  app/            # App Router layout and page
+  app/            # App Router layout (sidebar shell), home and /categories pages
   components/     # Feature components (tracker, form, table, charts)
     ui/           # shadcn/ui generated components
     db.ts         # SQLite connection and schema

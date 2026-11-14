@@ -32,3 +32,25 @@ export function deleteTransaction(id: string): boolean {
   const result = getDb().prepare(`DELETE FROM transactions WHERE id = ?`).run(id);
   return result.changes > 0;
 }
+
+export interface CategoryStat {
+  category: string;
+  count: number;
+  income: number;
+  expenses: number;
+}
+
+export function categoryStats(): CategoryStat[] {
+  return getDb()
+    .prepare<[], CategoryStat>(
+      `SELECT
+         category,
+         COUNT(*) AS count,
+         COALESCE(SUM(CASE WHEN type = 'income'  THEN amount END), 0) AS income,
+         COALESCE(SUM(CASE WHEN type = 'expense' THEN amount END), 0) AS expenses
+       FROM transactions
+       GROUP BY category
+       ORDER BY expenses DESC, income DESC, category ASC`,
+    )
+    .all();
+}
