@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { Trash2 } from "lucide-react";
+import { useState, useTransition } from "react";
+import { Loader2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { deleteTransactionAction } from "@/app/actions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,13 +22,23 @@ import { cn } from "@/lib/utils";
 
 type Filter = "all" | "income" | "expense";
 
-interface TransactionsTableProps {
-  transactions: Transaction[];
-  onRemove: (id: string) => void;
-}
-
-export function TransactionsTable({ transactions, onRemove }: TransactionsTableProps) {
+export function TransactionsTable({ transactions }: { transactions: Transaction[] }) {
   const [filter, setFilter] = useState<Filter>("all");
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [, startTransition] = useTransition();
+
+  function handleDelete(id: string) {
+    setDeletingId(id);
+    startTransition(async () => {
+      const result = await deleteTransactionAction(id);
+      setDeletingId(null);
+      if (!result.ok) {
+        toast.error(result.error);
+        return;
+      }
+      toast("Transaction deleted.");
+    });
+  }
 
   const visible = transactions
     .filter((t) => filter === "all" || t.type === filter)
@@ -92,12 +103,14 @@ export function TransactionsTable({ transactions, onRemove }: TransactionsTableP
                       variant="ghost"
                       size="icon"
                       aria-label={`Delete ${t.description}`}
-                      onClick={() => {
-                        onRemove(t.id);
-                        toast("Transaction deleted.");
-                      }}
+                      disabled={deletingId === t.id}
+                      onClick={() => handleDelete(t.id)}
                     >
-                      <Trash2 className="size-4" />
+                      {deletingId === t.id ? (
+                        <Loader2 className="size-4 animate-spin" />
+                      ) : (
+                        <Trash2 className="size-4" />
+                      )}
                     </Button>
                   </TableCell>
                 </TableRow>
