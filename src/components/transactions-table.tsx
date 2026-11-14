@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Loader2, Trash2 } from "lucide-react";
+import { Loader2, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { deleteTransactionAction } from "@/app/actions";
 import { Badge } from "@/components/ui/badge";
@@ -16,14 +16,24 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { TransactionDialog } from "@/components/transaction-form";
 import { formatCurrency, formatDate } from "@/lib/format";
-import type { Transaction } from "@/lib/types";
+import type { Category, Client, Transaction } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 type Filter = "all" | "income" | "expense";
 
-export function TransactionsTable({ transactions }: { transactions: Transaction[] }) {
+export function TransactionsTable({
+  transactions,
+  categories,
+  clients,
+}: {
+  transactions: Transaction[];
+  categories: Category[];
+  clients: Client[];
+}) {
   const [filter, setFilter] = useState<Filter>("all");
+  const [editing, setEditing] = useState<Transaction | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [, startTransition] = useTransition();
 
@@ -72,9 +82,10 @@ export function TransactionsTable({ transactions }: { transactions: Transaction[
               <TableRow>
                 <TableHead>Date</TableHead>
                 <TableHead>Description</TableHead>
+                <TableHead>Client</TableHead>
                 <TableHead>Category</TableHead>
                 <TableHead className="text-right">Amount</TableHead>
-                <TableHead className="w-10" />
+                <TableHead className="w-20" />
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -84,6 +95,7 @@ export function TransactionsTable({ transactions }: { transactions: Transaction[
                     {formatDate(t.date)}
                   </TableCell>
                   <TableCell className="font-medium">{t.description}</TableCell>
+                  <TableCell className="text-muted-foreground">{t.clientName}</TableCell>
                   <TableCell>
                     <Badge variant="secondary">{t.category}</Badge>
                   </TableCell>
@@ -99,19 +111,30 @@ export function TransactionsTable({ transactions }: { transactions: Transaction[
                     {formatCurrency(t.amount)}
                   </TableCell>
                   <TableCell>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      aria-label={`Delete ${t.description}`}
-                      disabled={deletingId === t.id}
-                      onClick={() => handleDelete(t.id)}
-                    >
-                      {deletingId === t.id ? (
-                        <Loader2 className="size-4 animate-spin" />
-                      ) : (
-                        <Trash2 className="size-4" />
-                      )}
-                    </Button>
+                    <div className="flex justify-end gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label={`Edit ${t.description}`}
+                        disabled={deletingId === t.id}
+                        onClick={() => setEditing(t)}
+                      >
+                        <Pencil className="size-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label={`Delete ${t.description}`}
+                        disabled={deletingId === t.id}
+                        onClick={() => handleDelete(t.id)}
+                      >
+                        {deletingId === t.id ? (
+                          <Loader2 className="size-4 animate-spin" />
+                        ) : (
+                          <Trash2 className="size-4" />
+                        )}
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
@@ -119,6 +142,14 @@ export function TransactionsTable({ transactions }: { transactions: Transaction[
           </Table>
         )}
       </CardContent>
+
+      <TransactionDialog
+        open={editing !== null}
+        onOpenChange={(open) => !open && setEditing(null)}
+        transaction={editing}
+        categories={categories}
+        clients={clients}
+      />
     </Card>
   );
 }
