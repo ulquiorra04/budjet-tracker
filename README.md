@@ -5,14 +5,14 @@ A simple personal budget tracker built with [Next.js](https://nextjs.org) (App R
 ## Features
 
 - Collapsible sidebar navigation (Transactions, Categories) with a theme toggle
-- Categories page with per-category counts, income, expenses, net and share of spending
+- Categories page to add, rename and delete categories, with per-category counts, income, expenses and net
 - Add income and expense transactions with category, description and date
 - Summary cards for balance, total income and total expenses
 - Filterable transactions table (all / income / expenses) with delete
 - Monthly budget limit with a progress bar and remaining amount
 - Spending breakdown by category
 - Light / dark theme toggle
-- Transactions are stored in a local SQLite database (`data/budjet.db`)
+- Transactions and categories are stored in a local SQLite database (`data/budjet.db`)
 - Monthly budget limit is remembered per browser via `localStorage`
 
 ## Tech stack
@@ -59,7 +59,8 @@ src/
   components/     # Feature components (tracker, form, table, charts)
     ui/           # shadcn/ui generated components
     db.ts         # SQLite connection and schema
-    transactions.ts # Data access (list / create / delete)
+    transactions.ts # Transaction data access (list / create / delete)
+    categories.ts # Category data access (list with stats / create / rename / delete)
     validation.ts # Input validation shared by the server action
   app/actions.ts  # Server Actions called from the client components
   lib/            # Types, formatting helpers, summary and budget hook
@@ -69,7 +70,7 @@ data/             # SQLite database file (git-ignored)
 
 ## Database
 
-Single table `transactions`:
+Table `transactions`:
 
 | Column        | Type | Notes                                   |
 | ------------- | ---- | --------------------------------------- |
@@ -80,6 +81,19 @@ Single table `transactions`:
 | `description` | TEXT |                                         |
 | `date`        | TEXT | ISO date `YYYY-MM-DD`                   |
 | `created_at`  | TEXT | ISO timestamp, set by SQLite            |
+
+Table `categories`:
+
+| Column       | Type | Notes                               |
+| ------------ | ---- | ----------------------------------- |
+| `id`         | TEXT | UUID primary key                    |
+| `name`       | TEXT | Unique, case-insensitive, non-empty |
+| `created_at` | TEXT | ISO timestamp, set by SQLite        |
+
+Transactions reference a category by name. Renaming a category updates its
+transactions in the same SQL transaction, and a category that is still in use
+cannot be deleted. When the `categories` table is first created it is seeded
+with a default set plus any names already present in `transactions`.
 
 The schema is applied with `CREATE TABLE IF NOT EXISTS` when the connection opens, and WAL journaling is enabled.
 

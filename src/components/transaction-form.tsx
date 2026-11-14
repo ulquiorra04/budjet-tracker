@@ -25,23 +25,23 @@ import {
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { addTransactionAction } from "@/app/actions";
 import { todayISO } from "@/lib/format";
-import { CATEGORIES, type Category, type TransactionType } from "@/lib/types";
+import type { Category, TransactionType } from "@/lib/types";
 
-const categoryItems = CATEGORIES.map((c) => ({ value: c, label: c }));
-
-export function TransactionForm() {
+export function TransactionForm({ categories }: { categories: Category[] }) {
+  const categoryItems = categories.map((c) => ({ value: c.name, label: c.name }));
+  const defaultCategory = categories[0]?.name ?? "";
   const [open, setOpen] = useState(false);
   const [pending, startTransition] = useTransition();
   const [type, setType] = useState<TransactionType>("expense");
   const [amount, setAmount] = useState("");
-  const [category, setCategory] = useState<Category>("Food");
+  const [category, setCategory] = useState(defaultCategory);
   const [description, setDescription] = useState("");
   const [date, setDate] = useState("");
 
   function reset() {
     setType("expense");
     setAmount("");
-    setCategory("Food");
+    setCategory(defaultCategory);
     setDescription("");
     setDate("");
   }
@@ -67,7 +67,7 @@ export function TransactionForm() {
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger render={<Button />}>
+      <DialogTrigger render={<Button disabled={categories.length === 0} />}>
         <Plus className="size-4" />
         Add transaction
       </DialogTrigger>
@@ -109,7 +109,7 @@ export function TransactionForm() {
             <Select
               items={categoryItems}
               value={category}
-              onValueChange={(v) => v && setCategory(v as Category)}
+              onValueChange={(v) => v && setCategory(String(v))}
             >
               <SelectTrigger id="category" className="w-full">
                 <SelectValue placeholder="Pick a category" />

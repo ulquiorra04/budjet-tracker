@@ -1,14 +1,23 @@
-import { CATEGORIES, type Category, type Transaction, type TransactionType } from "./types";
+import type { Transaction, TransactionType } from "./types";
 
 export type NewTransaction = Omit<Transaction, "id">;
 
-export type ValidationResult =
-  | { ok: true; value: NewTransaction }
-  | { ok: false; error: string };
+export type ValidationResult<T> = { ok: true; value: T } | { ok: false; error: string };
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+export const CATEGORY_NAME_MAX = 40;
 
-export function validateTransaction(input: unknown): ValidationResult {
+export function validateCategoryName(input: unknown): ValidationResult<string> {
+  if (typeof input !== "string") return { ok: false, error: "Enter a category name." };
+  const name = input.trim().replace(/\s+/g, " ");
+  if (!name) return { ok: false, error: "Enter a category name." };
+  if (name.length > CATEGORY_NAME_MAX) {
+    return { ok: false, error: `Category names must be ${CATEGORY_NAME_MAX} characters or fewer.` };
+  }
+  return { ok: true, value: name };
+}
+
+export function validateTransaction(input: unknown): ValidationResult<NewTransaction> {
   if (typeof input !== "object" || input === null) {
     return { ok: false, error: "Invalid transaction payload." };
   }
@@ -21,9 +30,8 @@ export function validateTransaction(input: unknown): ValidationResult {
   if (typeof parsedAmount !== "number" || !Number.isFinite(parsedAmount) || parsedAmount <= 0) {
     return { ok: false, error: "Enter an amount greater than zero." };
   }
-  if (typeof category !== "string" || !(CATEGORIES as readonly string[]).includes(category)) {
-    return { ok: false, error: "Pick a valid category." };
-  }
+  const categoryResult = validateCategoryName(category);
+  if (!categoryResult.ok) return { ok: false, error: "Pick a category." };
   if (typeof description !== "string" || !description.trim()) {
     return { ok: false, error: "Add a short description." };
   }
@@ -39,7 +47,7 @@ export function validateTransaction(input: unknown): ValidationResult {
     value: {
       type: type as TransactionType,
       amount: Math.round(parsedAmount * 100) / 100,
-      category: category as Category,
+      category: categoryResult.value,
       description: description.trim(),
       date,
     },

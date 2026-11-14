@@ -1,26 +1,15 @@
 export type TransactionType = "income" | "expense";
 
-export const CATEGORIES = [
-  "Salary",
-  "Freelance",
-  "Investments",
-  "Housing",
-  "Food",
-  "Transport",
-  "Utilities",
-  "Health",
-  "Entertainment",
-  "Shopping",
-  "Other",
-] as const;
-
-export type Category = (typeof CATEGORIES)[number];
+export interface Category {
+  id: string;
+  name: string;
+}
 
 export interface Transaction {
   id: string;
   type: TransactionType;
   amount: number;
-  category: Category;
+  category: string;
   description: string;
   date: string; // ISO date (YYYY-MM-DD)
 }

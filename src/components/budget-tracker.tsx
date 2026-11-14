@@ -7,10 +7,16 @@ import { SummaryCards } from "@/components/summary-cards";
 import { TransactionForm } from "@/components/transaction-form";
 import { TransactionsTable } from "@/components/transactions-table";
 import { summarize } from "@/lib/summary";
-import type { Transaction } from "@/lib/types";
+import type { Category, Transaction } from "@/lib/types";
 import { useMonthlyBudget } from "@/lib/use-monthly-budget";
 
-export function BudgetTracker({ transactions }: { transactions: Transaction[] }) {
+export function BudgetTracker({
+  transactions,
+  categories,
+}: {
+  transactions: Transaction[];
+  categories: Category[];
+}) {
   const summary = summarize(transactions);
   const [monthlyBudget, setMonthlyBudget] = useMonthlyBudget();
 
@@ -19,7 +25,7 @@ export function BudgetTracker({ transactions }: { transactions: Transaction[] })
       <PageHeader
         title="Transactions"
         description="Keep an eye on where your money goes."
-        actions={<TransactionForm />}
+        actions={<TransactionForm categories={categories} />}
       />
       <div className="flex flex-1 flex-col gap-6 p-4 sm:p-6">
         <SummaryCards summary={summary} />
