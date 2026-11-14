@@ -1,4 +1,4 @@
-// Seed the SQLite database with a few example transactions.
+// Seed the SQLite database with an example client and a few transactions.
 // Usage: npm run db:seed   (safe to re-run: skips if rows already exist)
 import { randomUUID } from "node:crypto";
 import { DB_PATH, openDatabase } from "../src/lib/db.ts";
@@ -19,12 +19,18 @@ if (count > 0) {
   console.log(`Database already has ${count} transaction(s) at ${DB_PATH}; nothing seeded.`);
 } else {
   const insert = db.prepare(
-    `INSERT INTO transactions (id, type, amount, category, description, date)
-     VALUES (@id, @type, @amount, @category, @description, @date)`,
+    `INSERT INTO transactions (id, type, amount, category, description, date, client_id)
+     VALUES (@id, @type, @amount, @category, @description, @date, @clientId)`,
   );
   db.transaction(() => {
-    for (const row of SEED) insert.run({ id: randomUUID(), ...row });
+    const clientId = randomUUID();
+    db.prepare("INSERT INTO clients (id, name, email) VALUES (?, ?, ?)").run(
+      clientId,
+      "Example Client",
+      "hello@example.com",
+    );
+    for (const row of SEED) insert.run({ id: randomUUID(), clientId, ...row });
   })();
-  console.log(`Seeded ${SEED.length} transactions into ${DB_PATH}.`);
+  console.log(`Seeded 1 client and ${SEED.length} transactions into ${DB_PATH}.`);
 }
 db.close();

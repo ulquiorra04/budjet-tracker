@@ -3,12 +3,19 @@ import { connection } from "next/server";
 import { BudgetTracker } from "@/components/budget-tracker";
 import { TrackerSkeleton } from "@/components/tracker-skeleton";
 import { listCategories } from "@/lib/categories";
+import { listClients } from "@/lib/clients";
 import { listTransactions } from "@/lib/transactions";
 
 async function TrackerData() {
   // Opt into request-time rendering: the list must come from SQLite on every request.
   await connection();
-  return <BudgetTracker transactions={listTransactions()} categories={listCategories()} />;
+  return (
+    <BudgetTracker
+      transactions={listTransactions()}
+      categories={listCategories()}
+      clients={listClients()}
+    />
+  );
 }
 
 export default function Home() {

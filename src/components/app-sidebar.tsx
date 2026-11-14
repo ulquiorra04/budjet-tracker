@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { PiggyBank, ReceiptText, Tags } from "lucide-react";
+import { PiggyBank, ReceiptText, Tags, Users } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import {
   Sidebar,
@@ -21,6 +21,7 @@ import {
 const NAV_ITEMS = [
   { title: "Transactions", href: "/", icon: ReceiptText },
   { title: "Categories", href: "/categories", icon: Tags },
+  { title: "Clients", href: "/clients", icon: Users },
 ] as const;
 
 export function AppSidebar() {
