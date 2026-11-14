@@ -5,10 +5,10 @@ import Database from "better-sqlite3";
 
 /** Categories inserted when the categories table is first created. */
 export const DEFAULT_CATEGORIES = [
-  "Salary",
+  "IPTV",
+  "SERVER",
   "Freelance",
-  "Investments",
-  "Housing",
+  "Receiver",
   "Food",
   "Transport",
   "Utilities",

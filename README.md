@@ -50,6 +50,7 @@ Set `DATABASE_PATH` to store the database somewhere else.
 | `npm run start` | Serve the production build       |
 | `npm run lint`  | Run ESLint                       |
 | `npm run db:seed` | Insert example transactions (skips if data exists) |
+| `npm run db:reset` | Delete all transactions and categories, restore default categories |
 
 ## Project structure
 
@@ -65,6 +66,7 @@ src/
   app/actions.ts  # Server Actions called from the client components
   lib/            # Types, formatting helpers, summary and budget hook
 scripts/seed.mts  # Example data seeder
+scripts/reset.mts # Clears all data and restores default categories
 data/             # SQLite database file (git-ignored)
 ```
 
