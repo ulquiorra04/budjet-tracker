@@ -7,18 +7,13 @@ import { SummaryCards } from "@/components/summary-cards";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { TransactionForm } from "@/components/transaction-form";
 import { TransactionsTable } from "@/components/transactions-table";
-import { useBudgetStore } from "@/lib/store";
+import { summarize } from "@/lib/summary";
+import type { Transaction } from "@/lib/types";
+import { useMonthlyBudget } from "@/lib/use-monthly-budget";
 
-export function BudgetTracker() {
-  const {
-    hydrated,
-    transactions,
-    summary,
-    monthlyBudget,
-    addTransaction,
-    removeTransaction,
-    setMonthlyBudget,
-  } = useBudgetStore();
+export function BudgetTracker({ transactions }: { transactions: Transaction[] }) {
+  const summary = summarize(transactions);
+  const [monthlyBudget, setMonthlyBudget] = useMonthlyBudget();
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 py-8 sm:px-6">
@@ -34,19 +29,17 @@ export function BudgetTracker() {
         </div>
         <div className="flex items-center gap-2">
           <ThemeToggle />
-          <TransactionForm onSubmit={addTransaction} />
+          <TransactionForm />
         </div>
       </header>
 
-      <div className={hydrated ? "contents" : "pointer-events-none opacity-50 contents"}>
-        <SummaryCards summary={summary} />
+      <SummaryCards summary={summary} />
 
-        <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
-          <TransactionsTable transactions={transactions} onRemove={removeTransaction} />
-          <div className="grid gap-6 content-start">
-            <MonthlyBudget budget={monthlyBudget} spent={summary.expenses} onChange={setMonthlyBudget} />
-            <CategoryBreakdown transactions={transactions} />
-          </div>
+      <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
+        <TransactionsTable transactions={transactions} />
+        <div className="grid gap-6 content-start">
+          <MonthlyBudget budget={monthlyBudget} spent={summary.expenses} onChange={setMonthlyBudget} />
+          <CategoryBreakdown transactions={transactions} />
         </div>
       </div>
     </div>

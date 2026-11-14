@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Plus } from "lucide-react";
+import { useState, useTransition } from "react";
+import { Loader2, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -23,17 +23,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { addTransactionAction } from "@/app/actions";
 import { todayISO } from "@/lib/format";
-import { CATEGORIES, type Category, type Transaction, type TransactionType } from "@/lib/types";
-
-interface TransactionFormProps {
-  onSubmit: (tx: Omit<Transaction, "id">) => void;
-}
+import { CATEGORIES, type Category, type TransactionType } from "@/lib/types";
 
 const categoryItems = CATEGORIES.map((c) => ({ value: c, label: c }));
 
-export function TransactionForm({ onSubmit }: TransactionFormProps) {
+export function TransactionForm() {
   const [open, setOpen] = useState(false);
+  const [pending, startTransition] = useTransition();
   const [type, setType] = useState<TransactionType>("expense");
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState<Category>("Food");
@@ -55,29 +53,16 @@ export function TransactionForm({ onSubmit }: TransactionFormProps) {
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const parsed = Number(amount);
-    if (!Number.isFinite(parsed) || parsed <= 0) {
-      toast.error("Enter an amount greater than zero.");
-      return;
-    }
-    if (!description.trim()) {
-      toast.error("Add a short description.");
-      return;
-    }
-    if (!date) {
-      toast.error("Pick a date.");
-      return;
-    }
-    onSubmit({
-      type,
-      amount: Math.round(parsed * 100) / 100,
-      category,
-      description: description.trim(),
-      date,
+    startTransition(async () => {
+      const result = await addTransactionAction({ type, amount, category, description, date });
+      if (!result.ok) {
+        toast.error(result.error);
+        return;
+      }
+      toast.success(`${type === "income" ? "Income" : "Expense"} added.`);
+      reset();
+      setOpen(false);
     });
-    toast.success(`${type === "income" ? "Income" : "Expense"} added.`);
-    reset();
-    setOpen(false);
   }
 
   return (
@@ -155,10 +140,13 @@ export function TransactionForm({ onSubmit }: TransactionFormProps) {
           </div>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+            <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={pending}>
               Cancel
             </Button>
-            <Button type="submit">Save</Button>
+            <Button type="submit" disabled={pending}>
+              {pending && <Loader2 className="size-4 animate-spin" />}
+              Save
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>
